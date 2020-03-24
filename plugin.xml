@@ -1,0 +1,12 @@
+<library path="lib/librqt_marine_radar">
+    <class name="rqt_marine_radar/MarineRadarPlugin" type="rqt_marine_radar::MarineRadarPlugin" base_class_type="rqt_gui_cpp::Plugin">
+        <description>
+            An interface to view and control marine radars.
+        </description>
+        <qtgui>
+            <label>Marine Radar Plugin</label>
+            <icon type="theme">system-help</icon>
+            <statustip>View and control marine radars</statustip>
+        </qtgui>
+    </class>   
+</library>
