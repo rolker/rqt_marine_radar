@@ -25,10 +25,12 @@ roslint_cpp()
 
 set(rqt_marine_radar_SRCS
     src/rqt_marine_radar/marine_radar_plugin.cpp
+    src/rqt_marine_radar/radar_widget.cpp
 )
 
 set(rqt_marine_radar_HDRS
     include/rqt_marine_radar/marine_radar_plugin.h
+    include/rqt_marine_radar/radar_widget.h
 )
 
 set(rqt_marine_radar_UIS

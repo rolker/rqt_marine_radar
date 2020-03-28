@@ -119,13 +119,13 @@ void MarineRadarPlugin::onTopicChanged(int index)
     QString topic = m_ui.topicsComboBox->itemData(index).toString();
     if(!topic.isEmpty())
     {
-        m_dataSubscriber = getNodeHandle().subscribe(topic.toStdString(), 1, &MarineRadarPlugin::dataCallback, this);
+        m_dataSubscriber = getNodeHandle().subscribe(topic.toStdString(), 10, &MarineRadarPlugin::dataCallback, this);
         
         QString state_topic = topic;
         state_topic.chop(4);
         state_topic += "state";
         
-        m_stateSubscriber = getNodeHandle().subscribe(state_topic.toStdString(), 1, &MarineRadarPlugin::stateCallback, this);
+        m_stateSubscriber = getNodeHandle().subscribe(state_topic.toStdString(), 10, &MarineRadarPlugin::stateCallback, this);
 
         QString state_change_topic = topic;
         state_change_topic.chop(4);
@@ -138,6 +138,21 @@ void MarineRadarPlugin::onTopicChanged(int index)
 void MarineRadarPlugin::dataCallback(const marine_msgs::RadarSectorStamped& msg)
 {
     //std::cerr << "radar data!" << std::endl;
+    if (!msg.sector.scanlines.empty())
+    {
+        
+        double angle1 = msg.sector.scanlines[0].angle;
+        double angle2 = msg.sector.scanlines.back().angle;
+        double range = msg.sector.scanlines[0].range;
+        int w = msg.sector.scanlines[0].intensities.size();
+        int h = msg.sector.scanlines.size();
+        QImage * sector = new QImage(w,h,QImage::Format_Grayscale8);
+        sector->fill(Qt::darkGray);
+        for(int i = 0; i < h; i++)
+            for(int j = 0; j < w; j++)
+                sector->bits()[i*w+j] = msg.sector.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
+        QMetaObject::invokeMethod(m_ui.openGLWidget,"addSector", Qt::QueuedConnection, Q_ARG(double, angle1), Q_ARG(double, angle2), Q_ARG(double, range), Q_ARG(QImage *, sector));
+    }
 }
 
 void MarineRadarPlugin::stateCallback(const marine_msgs::RadarControlSet& msg)
@@ -155,7 +170,7 @@ void MarineRadarPlugin::updateState()
     std::lock_guard<std::mutex> lock(m_state_mutex);
     for(auto state: m_new_state)
     {
-        std::cerr << state.name << ": " << state.value << std::endl;
+        //std::cerr << state.name << ": " << state.value << std::endl;
         if(m_controls.find(state.name) == m_controls.end())
         {
             int insertRow = m_ui.controlsGridLayout->rowCount();
