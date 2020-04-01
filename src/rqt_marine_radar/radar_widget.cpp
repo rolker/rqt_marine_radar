@@ -90,7 +90,7 @@ void RadarWidget::paintGL()
     m_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     m_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat));
     
-    while(m_sectors.size() > 30)
+    while(m_sectors.size() > 75)
     {
         if(m_sectors.front().sectorImage)
             delete m_sectors.front().sectorImage;
