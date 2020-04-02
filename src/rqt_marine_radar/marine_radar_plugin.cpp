@@ -28,6 +28,9 @@ void MarineRadarPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
     m_ui.refreshTopicsPushButton->setIcon(QIcon::fromTheme("view-refresh"));
     connect(m_ui.refreshTopicsPushButton, SIGNAL(pressed()), this, SLOT(updateTopicList()));
+    
+    connect(m_ui.showControlsPushButton, SIGNAL(pressed()), this, SLOT(onShowControlsPushButtonClicked()));
+    connect(m_ui.showRadarPushButton, SIGNAL(pressed()), this, SLOT(onShowRadarPushButtonClicked()));
 
     // set topic name if passed in as argument
     const QStringList& argv = context.argv();
@@ -135,6 +138,16 @@ void MarineRadarPlugin::onTopicChanged(int index)
     }
 }
 
+void MarineRadarPlugin::onShowControlsPushButtonClicked()
+{
+    m_ui.scrollArea->setVisible(!m_ui.scrollArea->isVisible());
+}
+
+void MarineRadarPlugin::onShowRadarPushButtonClicked()
+{
+    m_ui.openGLWidget->setVisible(!m_ui.openGLWidget->isVisible());
+}
+
 void MarineRadarPlugin::dataCallback(const marine_msgs::RadarSectorStamped& msg)
 {
     //std::cerr << "radar data!" << std::endl;
@@ -182,9 +195,10 @@ void MarineRadarPlugin::updateState()
                 case marine_msgs::RadarControlItem::CONTROL_TYPE_FLOAT:
                     {
                         QLineEdit *le = new QLineEdit();
+                        le->setMaximumWidth(100); 
                         QDoubleValidator *v = new QDoubleValidator(le);
                         if (state.max_value > state.min_value)
-                            v->setRange(state.min_value, state.max_value);
+                            v->setRange(state.min_value, state.max_value, 2);
                         le->setValidator(v);
                         le->setToolTip("Range: " + QString::number(state.min_value) + " to " + QString::number(state.max_value));
                         cs.input = le;
@@ -195,7 +209,9 @@ void MarineRadarPlugin::updateState()
                     {
                         cs.input = new QWidget();
                         QHBoxLayout *horizontalLayout = new QHBoxLayout(cs.input);
+                        horizontalLayout->setContentsMargins(0,0,0,0);
                         QLineEdit *lineEdit = new QLineEdit();
+                        lineEdit->setMaximumWidth(60);
                         QDoubleValidator *v = new QDoubleValidator(lineEdit);
                         if (state.max_value > state.min_value)
                             v->setRange(state.min_value, state.max_value);
@@ -205,6 +221,7 @@ void MarineRadarPlugin::updateState()
                         m_connections.push_back(connect(lineEdit, &QLineEdit::editingFinished, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=lineEdit->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
                         horizontalLayout->addWidget(lineEdit);
                         QPushButton *autoButton = new QPushButton("auto");
+                        autoButton->setMaximumWidth(35);
                         horizontalLayout->addWidget(autoButton);
                         m_connections.push_back(connect(autoButton, &QAbstractButton::clicked, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value="auto"; this->m_stateChangePublisher.publish(kv);}));
                     }
@@ -214,6 +231,7 @@ void MarineRadarPlugin::updateState()
                         QComboBox *cb = new QComboBox();
                         for(auto e: state.enums)
                             cb->addItem(QString::fromStdString(e));
+                        cb->setMaximumWidth(100); 
                         m_connections.push_back(connect(cb, QOverload<int>::of(&QComboBox::activated), this, [=](int index){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=cb->itemText(index).toStdString(); this->m_stateChangePublisher.publish(kv);}));
                         cs.input = cb;
                     }

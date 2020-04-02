@@ -30,6 +30,8 @@ protected slots:
     virtual void selectTopic(const QString& topic);  
 
     virtual void onTopicChanged(int index);
+    virtual void onShowControlsPushButtonClicked();
+    virtual void onShowRadarPushButtonClicked();
   
     virtual void dataCallback(const marine_msgs::RadarSectorStamped &msg);
     virtual void stateCallback(const marine_msgs::RadarControlSet &msg); 
