@@ -179,7 +179,7 @@ void MarineRadarPlugin::updateState()
             cs.state = new QLabel(QString::fromStdString(state.value));
             switch (state.type)
             {
-                case 0:
+                case marine_msgs::RadarControlItem::CONTROL_TYPE_FLOAT:
                     {
                         QLineEdit *le = new QLineEdit();
                         QDoubleValidator *v = new QDoubleValidator(le);
@@ -190,7 +190,7 @@ void MarineRadarPlugin::updateState()
                         m_connections.push_back(connect(le, &QLineEdit::editingFinished, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=le->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
                     }
                     break;
-                case 1:
+                case marine_msgs::RadarControlItem::CONTROL_TYPE_FLOAT_WITH_AUTO:
                     {
                         cs.input = new QWidget();
                         QHBoxLayout *horizontalLayout = new QHBoxLayout(cs.input);
@@ -206,7 +206,7 @@ void MarineRadarPlugin::updateState()
                         m_connections.push_back(connect(autoButton, &QAbstractButton::clicked, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value="auto"; this->m_stateChangePublisher.publish(kv);}));
                     }
                     break;
-                case 2:
+                case marine_msgs::RadarControlItem::CONTROL_TYPE_ENUM:
                     {
                         QComboBox *cb = new QComboBox();
                         for(auto e: state.enums)

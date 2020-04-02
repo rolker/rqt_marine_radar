@@ -35,7 +35,7 @@ protected:
         Sector():angle1(0),angle2(0),range(0),sectorImage(nullptr),sectorTexture(nullptr)
         {}
         
-        double angle1, angle2, range;
+        double angle1, angle2, range, half_scanline_angle;
         QImage *sectorImage;
         QOpenGLTexture *sectorTexture;
     };
