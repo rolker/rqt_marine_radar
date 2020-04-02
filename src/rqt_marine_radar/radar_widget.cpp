@@ -105,8 +105,8 @@ void RadarWidget::paintGL()
             {
                 s.sectorTexture = new QOpenGLTexture(*s.sectorImage);
             }
-            m_program->setUniformValue("minAngle", GLfloat(s.angle1-s.half_scanline_angle));
-            m_program->setUniformValue("maxAngle", GLfloat(s.angle2+s.half_scanline_angle));
+            m_program->setUniformValue("minAngle", GLfloat(s.angle1-s.half_scanline_angle*1.1));
+            m_program->setUniformValue("maxAngle", GLfloat(s.angle2+s.half_scanline_angle*1.1));
             s.sectorTexture->bind();
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         }

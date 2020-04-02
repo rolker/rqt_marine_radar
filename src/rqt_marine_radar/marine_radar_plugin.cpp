@@ -186,6 +186,7 @@ void MarineRadarPlugin::updateState()
                         if (state.max_value > state.min_value)
                             v->setRange(state.min_value, state.max_value);
                         le->setValidator(v);
+                        le->setToolTip("Range: " + QString::number(state.min_value) + " to " + QString::number(state.max_value));
                         cs.input = le;
                         m_connections.push_back(connect(le, &QLineEdit::editingFinished, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=le->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
                     }
@@ -199,6 +200,8 @@ void MarineRadarPlugin::updateState()
                         if (state.max_value > state.min_value)
                             v->setRange(state.min_value, state.max_value);
                         lineEdit->setValidator(v);
+                        lineEdit->setToolTip("Range: " + QString::number(state.min_value) + " to " + QString::number(state.max_value));
+
                         m_connections.push_back(connect(lineEdit, &QLineEdit::editingFinished, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=lineEdit->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
                         horizontalLayout->addWidget(lineEdit);
                         QPushButton *autoButton = new QPushButton("auto");
