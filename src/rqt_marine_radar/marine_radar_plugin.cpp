@@ -82,7 +82,7 @@ void MarineRadarPlugin::updateTopicList()
     
     QList<QString> topics;
     for(const auto t: topic_info)
-        if (t.datatype == "marine_msgs/RadarSectorStamped")
+        if (t.datatype == "marine_msgs/RadarControlSet")
             topics.append(t.name.c_str());
         
     topics.append("");
@@ -122,16 +122,16 @@ void MarineRadarPlugin::onTopicChanged(int index)
     QString topic = m_ui.topicsComboBox->itemData(index).toString();
     if(!topic.isEmpty())
     {
-        m_dataSubscriber = getNodeHandle().subscribe(topic.toStdString(), 10, &MarineRadarPlugin::dataCallback, this);
+        m_stateSubscriber = getNodeHandle().subscribe(topic.toStdString(), 10, &MarineRadarPlugin::stateCallback, this);
+
+        QString data_topic = topic;
+        data_topic.chop(5);
+        data_topic += "data";
         
-        QString state_topic = topic;
-        state_topic.chop(4);
-        state_topic += "state";
-        
-        m_stateSubscriber = getNodeHandle().subscribe(state_topic.toStdString(), 10, &MarineRadarPlugin::stateCallback, this);
+        m_dataSubscriber = getNodeHandle().subscribe(data_topic.toStdString(), 10, &MarineRadarPlugin::dataCallback, this);
 
         QString state_change_topic = topic;
-        state_change_topic.chop(4);
+        state_change_topic.chop(5);
         state_change_topic += "change_state";
         
         m_stateChangePublisher = getNodeHandle().advertise<marine_msgs::KeyValue>(state_change_topic.toStdString(),10);
