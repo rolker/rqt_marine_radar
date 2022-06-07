@@ -1,7 +1,7 @@
 #include "rqt_marine_radar/marine_radar_plugin.h"
 #include <pluginlib/class_list_macros.h>
 #include <ros/master.h>
-#include <marine_msgs/KeyValue.h>
+#include <marine_sensor_msgs/RadarControlValue.h>
 #include <QLineEdit>
 #include <QLabel>
 
@@ -82,7 +82,7 @@ void MarineRadarPlugin::updateTopicList()
     
     QList<QString> topics;
     for(const auto t: topic_info)
-        if (t.datatype == "marine_msgs/RadarControlSet")
+        if (t.datatype == "marine_sensor_msgs/RadarControlSet")
             topics.append(t.name.c_str());
         
     topics.append("");
@@ -134,7 +134,7 @@ void MarineRadarPlugin::onTopicChanged(int index)
         state_change_topic.chop(5);
         state_change_topic += "change_state";
         
-        m_stateChangePublisher = getNodeHandle().advertise<marine_msgs::KeyValue>(state_change_topic.toStdString(),10);
+        m_stateChangePublisher = getNodeHandle().advertise<marine_sensor_msgs::RadarControlValue>(state_change_topic.toStdString(),10);
     }
 }
 
@@ -148,27 +148,27 @@ void MarineRadarPlugin::onShowRadarPushButtonClicked()
     m_ui.openGLWidget->setVisible(!m_ui.openGLWidget->isVisible());
 }
 
-void MarineRadarPlugin::dataCallback(const marine_msgs::RadarSectorStamped& msg)
+void MarineRadarPlugin::dataCallback(const marine_sensor_msgs::RadarSector& msg)
 {
     //std::cerr << "radar data!" << std::endl;
-    if (!msg.sector.scanlines.empty())
+    if (!msg.scanlines.empty())
     {
         
-        double angle1 = msg.sector.scanlines[0].angle;
-        double angle2 = msg.sector.scanlines.back().angle;
-        double range = msg.sector.scanlines[0].range;
-        int w = msg.sector.scanlines[0].intensities.size();
-        int h = msg.sector.scanlines.size();
+        double angle1 = msg.scanlines[0].angle;
+        double angle2 = msg.scanlines.back().angle;
+        double range = msg.scanlines[0].range;
+        int w = msg.scanlines[0].intensities.size();
+        int h = msg.scanlines.size();
         QImage * sector = new QImage(w,h,QImage::Format_Grayscale8);
         sector->fill(Qt::darkGray);
         for(int i = 0; i < h; i++)
             for(int j = 0; j < w; j++)
-                sector->bits()[i*w+j] = msg.sector.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
+                sector->bits()[i*w+j] = msg.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
         QMetaObject::invokeMethod(m_ui.openGLWidget,"addSector", Qt::QueuedConnection, Q_ARG(double, angle1), Q_ARG(double, angle2), Q_ARG(double, range), Q_ARG(QImage *, sector));
     }
 }
 
-void MarineRadarPlugin::stateCallback(const marine_msgs::RadarControlSet& msg)
+void MarineRadarPlugin::stateCallback(const marine_sensor_msgs::RadarControlSet& msg)
 {
     std::lock_guard<std::mutex> lock(m_state_mutex);
     m_new_state.clear();
@@ -192,7 +192,7 @@ void MarineRadarPlugin::updateState()
             cs.state = new QLabel(QString::fromStdString(state.value));
             switch (state.type)
             {
-                case marine_msgs::RadarControlItem::CONTROL_TYPE_FLOAT:
+                case marine_sensor_msgs::RadarControlItem::CONTROL_TYPE_FLOAT:
                     {
                         QLineEdit *le = new QLineEdit();
                         le->setMaximumWidth(100); 
@@ -202,10 +202,10 @@ void MarineRadarPlugin::updateState()
                         le->setValidator(v);
                         le->setToolTip("Range: " + QString::number(state.min_value) + " to " + QString::number(state.max_value));
                         cs.input = le;
-                        m_connections.push_back(connect(le, &QLineEdit::editingFinished, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=le->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
+                        m_connections.push_back(connect(le, &QLineEdit::editingFinished, this, [=](){marine_sensor_msgs::RadarControlValue kv; kv.key=state.name; kv.value=le->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
                     }
                     break;
-                case marine_msgs::RadarControlItem::CONTROL_TYPE_FLOAT_WITH_AUTO:
+                case marine_sensor_msgs::RadarControlItem::CONTROL_TYPE_FLOAT_WITH_AUTO:
                     {
                         cs.input = new QWidget();
                         QHBoxLayout *horizontalLayout = new QHBoxLayout(cs.input);
@@ -218,21 +218,21 @@ void MarineRadarPlugin::updateState()
                         lineEdit->setValidator(v);
                         lineEdit->setToolTip("Range: " + QString::number(state.min_value) + " to " + QString::number(state.max_value));
 
-                        m_connections.push_back(connect(lineEdit, &QLineEdit::editingFinished, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=lineEdit->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
+                        m_connections.push_back(connect(lineEdit, &QLineEdit::editingFinished, this, [=](){marine_sensor_msgs::RadarControlValue kv; kv.key=state.name; kv.value=lineEdit->text().toStdString(); this->m_stateChangePublisher.publish(kv);}));
                         horizontalLayout->addWidget(lineEdit);
                         QPushButton *autoButton = new QPushButton("auto");
                         autoButton->setMaximumWidth(35);
                         horizontalLayout->addWidget(autoButton);
-                        m_connections.push_back(connect(autoButton, &QAbstractButton::clicked, this, [=](){marine_msgs::KeyValue kv; kv.key=state.name; kv.value="auto"; this->m_stateChangePublisher.publish(kv);}));
+                        m_connections.push_back(connect(autoButton, &QAbstractButton::clicked, this, [=](){marine_sensor_msgs::RadarControlValue kv; kv.key=state.name; kv.value="auto"; this->m_stateChangePublisher.publish(kv);}));
                     }
                     break;
-                case marine_msgs::RadarControlItem::CONTROL_TYPE_ENUM:
+                case marine_sensor_msgs::RadarControlItem::CONTROL_TYPE_ENUM:
                     {
                         QComboBox *cb = new QComboBox();
                         for(auto e: state.enums)
                             cb->addItem(QString::fromStdString(e));
                         cb->setMaximumWidth(100); 
-                        m_connections.push_back(connect(cb, QOverload<int>::of(&QComboBox::activated), this, [=](int index){marine_msgs::KeyValue kv; kv.key=state.name; kv.value=cb->itemText(index).toStdString(); this->m_stateChangePublisher.publish(kv);}));
+                        m_connections.push_back(connect(cb, QOverload<int>::of(&QComboBox::activated), this, [=](int index){marine_sensor_msgs::RadarControlValue kv; kv.key=state.name; kv.value=cb->itemText(index).toStdString(); this->m_stateChangePublisher.publish(kv);}));
                         cs.input = cb;
                     }
                     break;

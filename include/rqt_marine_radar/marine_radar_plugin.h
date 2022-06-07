@@ -4,8 +4,8 @@
 #include <rqt_gui_cpp/plugin.h>
 #include <ui_marine_radar_plugin.h>
 #include <ros/ros.h>
-#include <marine_msgs/RadarSectorStamped.h>
-#include <marine_msgs/RadarControlSet.h>
+#include <marine_sensor_msgs/RadarSector.h>
+#include <marine_sensor_msgs/RadarControlSet.h>
 #include <mutex>
 
 class QLabel;
@@ -33,8 +33,8 @@ protected slots:
     virtual void onShowControlsPushButtonClicked();
     virtual void onShowRadarPushButtonClicked();
   
-    virtual void dataCallback(const marine_msgs::RadarSectorStamped &msg);
-    virtual void stateCallback(const marine_msgs::RadarControlSet &msg); 
+    virtual void dataCallback(const marine_sensor_msgs::RadarSector &msg);
+    virtual void stateCallback(const marine_sensor_msgs::RadarControlSet &msg); 
   
     void updateState();
   
@@ -57,7 +57,7 @@ private:
     std::map<std::string,ControlSet> m_controls;
     std::vector<QMetaObject::Connection> m_connections;
     
-    std::vector<marine_msgs::RadarControlItem> m_new_state;
+    std::vector<marine_sensor_msgs::RadarControlItem> m_new_state;
     std::mutex m_state_mutex;
 };
 

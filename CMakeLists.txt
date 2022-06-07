@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
     roslint
     rqt_gui
     rqt_gui_cpp
-    marine_msgs
+    marine_sensor_msgs
 )
 
 set(CMAKE_AUTOMOC ON)
@@ -48,7 +48,7 @@ endif()
 catkin_package(
   INCLUDE_DIRS ${rqt_marine_radar_INCLUDE_DIRECTORIES}
   LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS roscpp rqt_gui_cpp rqt_gui marine_msgs
+  CATKIN_DEPENDS roscpp rqt_gui_cpp rqt_gui marine_sensor_msgs
 #  DEPENDS system_lib
 )
 
