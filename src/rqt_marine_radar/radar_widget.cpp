@@ -118,10 +118,10 @@ void RadarWidget::addSector(double angle1, double angle2, double range, QImage *
     //std::cerr << angle1 << " - " << angle2 << " degs, " << range << " meters" << std::endl;
     Sector s;
     if(angle1 > angle2)
-        s.angle1 = (angle1-360.0)*M_PI/180.0;
+        s.angle1 = angle1-(2.0*M_PI);
     else
-        s.angle1 = angle1*M_PI/180.0;
-    s.angle2 = angle2*M_PI/180.0;
+        s.angle1 = angle1;
+    s.angle2 = angle2;
     s.half_scanline_angle = (s.angle2 - s.angle1)/(2.0*sector->height());
     s.range = range;
     s.sectorImage = sector;
