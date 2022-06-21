@@ -153,17 +153,16 @@ void MarineRadarPlugin::dataCallback(const marine_sensor_msgs::RadarSector& msg)
     //std::cerr << "radar data!" << std::endl;
     if (!msg.scanlines.empty())
     {
-        
-        double angle1 = msg.scanlines[0].angle;
+        double angle1 = msg.scanlines.front().angle;
         double angle2 = msg.scanlines.back().angle;
-        double range = msg.scanlines[0].range;
-        int w = msg.scanlines[0].intensities.size();
+        double range = msg.scanlines.front().range;
+        int w = msg.scanlines.front().intensities.size();
         int h = msg.scanlines.size();
         QImage * sector = new QImage(w,h,QImage::Format_Grayscale8);
         sector->fill(Qt::darkGray);
         for(int i = 0; i < h; i++)
             for(int j = 0; j < w; j++)
-                sector->bits()[i*w+j] = msg.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
+                sector->bits()[(h-1-i)*w+j] = msg.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
         QMetaObject::invokeMethod(m_ui.openGLWidget,"addSector", Qt::QueuedConnection, Q_ARG(double, angle1), Q_ARG(double, angle2), Q_ARG(double, range), Q_ARG(QImage *, sector));
     }
 }
