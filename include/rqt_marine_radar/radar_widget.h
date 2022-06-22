@@ -5,6 +5,7 @@
 #include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include <QMatrix4x4>
+#include <QDateTime>
 #include <deque>
 
 Q_DECLARE_METATYPE(QImage*)
@@ -23,7 +24,7 @@ public:
     RadarWidget(QWidget *parent);
     
 public slots:
-    void addSector(double angle1, double angle2, double range, QImage *sector);
+    void addSector(double angle1, double angle2, double range, QImage *sector, QDateTime timestamp);
     
 protected:
     void initializeGL() override;
@@ -38,6 +39,7 @@ protected:
         double angle1, angle2, range, half_scanline_angle;
         QImage *sectorImage;
         QOpenGLTexture *sectorTexture;
+        QDateTime timestamp;
     };
 
     std::deque<Sector> m_sectors;
@@ -45,6 +47,8 @@ protected:
     QOpenGLShaderProgram *m_program;
     QOpenGLBuffer m_vbo;
     QMatrix4x4 m_matrix;
+    double m_fade_time = 3.0;
+    QTimer* m_update_timer = nullptr;
 };
     
 } // namespace

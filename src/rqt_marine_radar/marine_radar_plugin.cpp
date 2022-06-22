@@ -163,7 +163,8 @@ void MarineRadarPlugin::dataCallback(const marine_sensor_msgs::RadarSector& msg)
         for(int i = 0; i < h; i++)
             for(int j = 0; j < w; j++)
                 sector->bits()[(h-1-i)*w+j] = msg.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
-        QMetaObject::invokeMethod(m_ui.openGLWidget,"addSector", Qt::QueuedConnection, Q_ARG(double, angle1), Q_ARG(double, angle2), Q_ARG(double, range), Q_ARG(QImage *, sector));
+        QDateTime timestamp = QDateTime::fromMSecsSinceEpoch(msg.header.stamp.toSec()*1000,Qt::UTC);
+        QMetaObject::invokeMethod(m_ui.openGLWidget,"addSector", Qt::QueuedConnection, Q_ARG(double, angle1), Q_ARG(double, angle2), Q_ARG(double, range), Q_ARG(QImage *, sector), Q_ARG(QDateTime, timestamp));
     }
 }
 

@@ -1,12 +1,16 @@
 #include "rqt_marine_radar/marine_radar_plugin.h"
 #include <QOpenGLShader>
 #include <QOpenGLTexture>
+#include <QTimer>
 
 namespace rqt_marine_radar
 {
     
 RadarWidget::RadarWidget(QWidget *parent): QOpenGLWidget(parent)
 {
+    m_update_timer = new QTimer(this);
+    connect(m_update_timer, &QTimer::timeout, this, QOverload<>::of(&RadarWidget::update));
+    m_update_timer->start(100);
 }
 
 void RadarWidget::initializeGL()
@@ -46,6 +50,7 @@ void RadarWidget::initializeGL()
         "varying mediump vec4 texc;\n"
         "uniform float minAngle;\n"
         "uniform float maxAngle;\n"
+        "uniform float opacity;\n"
         "void main(void)\n"
         "{\n"
         "    if(texc.x == 0.0) discard;\n"
@@ -55,7 +60,7 @@ void RadarWidget::initializeGL()
         "    if(minAngle > 0.0 && theta < 0.0) theta += 2.0*M_PI;\n"
         "    if(theta < minAngle) discard;\n"
         "    if(theta > maxAngle) discard;\n"
-        "    gl_FragColor = texture2D(texture, vec2(r, (theta-minAngle)/(maxAngle-minAngle)));\n"
+        "    gl_FragColor = opacity*texture2D(texture, vec2(r, (theta-minAngle)/(maxAngle-minAngle)));\n"
         "}\n";
     fshader->compileSourceCode(fsrc);
 
@@ -89,8 +94,11 @@ void RadarWidget::paintGL()
     m_program->setUniformValue("matrix", m_matrix);
     m_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     m_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat));
+
+    auto now = QDateTime::currentDateTimeUtc();
+    QDateTime faded_out = now.addMSecs(-1000*m_fade_time);
     
-    while(m_sectors.size() > 75)
+    while(!m_sectors.empty() && m_sectors.front().timestamp < faded_out)
     {
         if(m_sectors.front().sectorImage)
             delete m_sectors.front().sectorImage;
@@ -107,13 +115,18 @@ void RadarWidget::paintGL()
             }
             m_program->setUniformValue("minAngle", GLfloat(s.angle2-s.half_scanline_angle*1.1));
             m_program->setUniformValue("maxAngle", GLfloat(s.angle1+s.half_scanline_angle*1.1));
+
+            double opacity = (s.timestamp.msecsTo(now)/1000.0)/m_fade_time;
+            opacity = 1.0-std::max(std::min(opacity,1.0), 0.0);
+
+            m_program->setUniformValue("opacity", GLfloat(opacity));
             s.sectorTexture->bind();
             glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
         }
     
 }
 
-void RadarWidget::addSector(double angle1, double angle2, double range, QImage *sector)
+void RadarWidget::addSector(double angle1, double angle2, double range, QImage *sector, QDateTime timestamp)
 {
     //std::cerr << angle1 << " - " << angle2 << " rads, " << range << " meters" << std::endl;
     Sector s;
@@ -125,6 +138,7 @@ void RadarWidget::addSector(double angle1, double angle2, double range, QImage *
     s.half_scanline_angle = (s.angle1 - s.angle2)/(2.0*sector->height());
     s.range = range;
     s.sectorImage = sector;
+    s.timestamp = timestamp;
     m_sectors.push_back(s);
     update();
 }
