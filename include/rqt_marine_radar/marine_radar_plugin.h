@@ -32,6 +32,7 @@ protected slots:
     virtual void onTopicChanged(int index);
     virtual void onShowControlsPushButtonClicked();
     virtual void onShowRadarPushButtonClicked();
+    virtual void onFadePeriodDoubleSpinBoxValueChanged();
   
     virtual void dataCallback(const marine_sensor_msgs::RadarSector &msg);
     virtual void stateCallback(const marine_sensor_msgs::RadarControlSet &msg); 

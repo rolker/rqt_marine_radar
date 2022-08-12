@@ -37,6 +37,25 @@
        </widget>
       </item>
       <item>
+       <widget class="QDoubleSpinBox" name="fadeTimeDoubleSpinBox">
+        <property name="toolTip">
+         <string>Fade time (s)</string>
+        </property>
+        <property name="decimals">
+         <number>1</number>
+        </property>
+        <property name="minimum">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="singleStep">
+         <double>0.100000000000000</double>
+        </property>
+        <property name="value">
+         <double>3.000000000000000</double>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="refreshTopicsPushButton">
         <property name="text">
          <string/>
@@ -135,7 +154,7 @@
          <x>0</x>
          <y>0</y>
          <width>320</width>
-         <height>272</height>
+         <height>271</height>
         </rect>
        </property>
        <property name="sizePolicy">

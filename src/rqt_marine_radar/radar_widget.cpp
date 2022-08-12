@@ -2,6 +2,7 @@
 #include <QOpenGLShader>
 #include <QOpenGLTexture>
 #include <QTimer>
+#include <ros/ros.h>
 
 namespace rqt_marine_radar
 {
@@ -56,7 +57,7 @@ void RadarWidget::initializeGL()
         "    if(texc.x == 0.0) discard;\n"
         "    float r = length(texc.xy);\n"
         "    if(r>1.0) discard;\n"
-        "    float theta = atan(texc.y, texc.x);\n"
+        "    float theta = atan(-texc.x, texc.y);\n"
         "    if(minAngle > 0.0 && theta < 0.0) theta += 2.0*M_PI;\n"
         "    if(theta < minAngle) discard;\n"
         "    if(theta > maxAngle) discard;\n"
@@ -95,7 +96,7 @@ void RadarWidget::paintGL()
     m_program->enableAttributeArray(PROGRAM_VERTEX_ATTRIBUTE);
     m_program->setAttributeBuffer(PROGRAM_VERTEX_ATTRIBUTE, GL_FLOAT, 0, 3, 3 * sizeof(GLfloat));
 
-    auto now = QDateTime::currentDateTimeUtc();
+    auto now = QDateTime::fromMSecsSinceEpoch(ros::Time::now().toSec()*1000);
     QDateTime faded_out = now.addMSecs(-1000*m_fade_time);
     
     while(!m_sectors.empty() && m_sectors.front().timestamp < faded_out)
@@ -141,6 +142,16 @@ void RadarWidget::addSector(double angle1, double angle2, double range, QImage *
     s.timestamp = timestamp;
     m_sectors.push_back(s);
     update();
+}
+
+double RadarWidget::fadeTime() const
+{
+    return m_fade_time;
+}
+
+void RadarWidget::setFadeTime(double fade_time)
+{
+    m_fade_time = fade_time;
 }
 
 } //namespace

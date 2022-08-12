@@ -22,9 +22,12 @@ class RadarWidget: public QOpenGLWidget, protected QOpenGLFunctions
     Q_OBJECT
 public:
     RadarWidget(QWidget *parent);
+    double fadeTime() const;
     
 public slots:
     void addSector(double angle1, double angle2, double range, QImage *sector, QDateTime timestamp);
+    void setFadeTime(double fade_time);
+
     
 protected:
     void initializeGL() override;

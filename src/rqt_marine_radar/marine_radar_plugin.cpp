@@ -31,6 +31,7 @@ void MarineRadarPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
     
     connect(m_ui.showControlsPushButton, SIGNAL(pressed()), this, SLOT(onShowControlsPushButtonClicked()));
     connect(m_ui.showRadarPushButton, SIGNAL(pressed()), this, SLOT(onShowRadarPushButtonClicked()));
+    connect(m_ui.fadeTimeDoubleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onFadePeriodDoubleSpinBoxValueChanged()));
 
     // set topic name if passed in as argument
     const QStringList& argv = context.argv();
@@ -147,6 +148,12 @@ void MarineRadarPlugin::onShowRadarPushButtonClicked()
 {
     m_ui.openGLWidget->setVisible(!m_ui.openGLWidget->isVisible());
 }
+
+void MarineRadarPlugin::onFadePeriodDoubleSpinBoxValueChanged()
+{
+    m_ui.openGLWidget->setFadeTime(m_ui.fadeTimeDoubleSpinBox->value());
+}
+
 
 void MarineRadarPlugin::dataCallback(const marine_sensor_msgs::RadarSector& msg)
 {
