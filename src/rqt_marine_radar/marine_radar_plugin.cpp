@@ -158,18 +158,18 @@ void MarineRadarPlugin::onFadePeriodDoubleSpinBoxValueChanged()
 void MarineRadarPlugin::dataCallback(const marine_sensor_msgs::RadarSector& msg)
 {
     //std::cerr << "radar data!" << std::endl;
-    if (!msg.scanlines.empty())
+    if (!msg.intensities.empty())
     {
-        double angle1 = msg.scanlines.front().angle;
-        double angle2 = msg.scanlines.back().angle;
-        double range = msg.scanlines.front().range;
-        int w = msg.scanlines.front().intensities.size();
-        int h = msg.scanlines.size();
+        double angle1 = msg.angle_min;
+        double angle2 = msg.angle_max;
+        double range = msg.range_max;
+        int w = msg.intensities.front().echoes.size();
+        int h = msg.intensities.size();
         QImage * sector = new QImage(w,h,QImage::Format_Grayscale8);
         sector->fill(Qt::darkGray);
         for(int i = 0; i < h; i++)
             for(int j = 0; j < w; j++)
-                sector->bits()[(h-1-i)*w+j] = msg.scanlines[i].intensities[j]*16; // *16 to convert from 4 to 8 bits
+                sector->bits()[(h-1-i)*w+j] = msg.intensities[i].echoes[j]*255; // convert from float to 8 bits
         QDateTime timestamp = QDateTime::fromMSecsSinceEpoch(msg.header.stamp.toSec()*1000,Qt::UTC);
         QMetaObject::invokeMethod(m_ui.openGLWidget,"addSector", Qt::QueuedConnection, Q_ARG(double, angle1), Q_ARG(double, angle2), Q_ARG(double, range), Q_ARG(QImage *, sector), Q_ARG(QDateTime, timestamp));
     }
