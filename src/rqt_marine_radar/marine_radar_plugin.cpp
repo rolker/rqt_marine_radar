@@ -83,7 +83,7 @@ void MarineRadarPlugin::updateTopicList()
     
     QList<QString> topics;
     for(const auto t: topic_info)
-        if (t.datatype == "marine_sensor_msgs/RadarControlSet")
+        if (t.datatype == "marine_radar_control_msgs/RadarControlSet")
             topics.append(t.name.c_str());
         
     topics.append("");
@@ -160,8 +160,8 @@ void MarineRadarPlugin::dataCallback(const marine_sensor_msgs::RadarSector& msg)
     //std::cerr << "radar data!" << std::endl;
     if (!msg.intensities.empty())
     {
-        double angle1 = msg.angle_min;
-        double angle2 = msg.angle_max;
+        double angle1 = msg.angle_start;
+        double angle2 = angle1+ msg.angle_increment*(msg.intensities.size()-1);
         double range = msg.range_max;
         int w = msg.intensities.front().echoes.size();
         int h = msg.intensities.size();
