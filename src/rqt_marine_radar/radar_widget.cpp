@@ -98,7 +98,7 @@ void RadarWidget::paintGL()
 
     auto now = QDateTime::fromMSecsSinceEpoch(ros::Time::now().toSec()*1000);
     QDateTime faded_out = now.addMSecs(-1000*m_fade_time);
-    
+
     while(!m_sectors.empty() && m_sectors.front().timestamp < faded_out)
     {
         if(m_sectors.front().sectorImage)
@@ -129,7 +129,10 @@ void RadarWidget::paintGL()
 
 void RadarWidget::addSector(double angle1, double angle2, double range, QImage *sector, QDateTime timestamp)
 {
-    //std::cerr << angle1 << " - " << angle2 << " rads, " << range << " meters" << std::endl;
+    auto now = QDateTime::fromMSecsSinceEpoch(ros::Time::now().toSec()*1000);
+    QDateTime faded_out = now.addMSecs(-1000*m_fade_time);
+    if(timestamp < faded_out)
+        ROS_WARN_STREAM_THROTTLE(1.0, "Received expired radar data. Are the machine times synced? " << timestamp.msecsTo(now)/1000.0 << " seconds behind." );
     Sector s;
     if(angle1 < angle2)
         s.angle1 = angle1+(2.0*M_PI);
